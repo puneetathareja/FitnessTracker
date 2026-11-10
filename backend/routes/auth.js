@@ -57,9 +57,16 @@ router.post('/signup', async (req, res) => {
       // Hash password using bcrypt (10 salt rounds for security)
       const hashed = bcrypt.hashSync(password, 10);
       
+      const baseUsername = (req.body.username || name || email.split('@')[0])
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '');
+      const uniqueSuffix = Math.random().toString(36).substring(2, 6);
+      const username = baseUsername ? `${baseUsername}_${uniqueSuffix}` : `user_${Date.now()}`;
+
       // Create new user document
       const doc = { 
         name: name || '', 
+        username,
         email, 
         password: hashed, 
         role: safeRole, 
