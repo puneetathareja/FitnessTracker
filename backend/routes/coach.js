@@ -27,7 +27,14 @@ function getGeminiKey() {
   ).trim();
 }
 
-const MODEL = (process.env.GOOGLE_GEMINI_MODEL || 'gemini-2.5-flash').trim();
+const CANDIDATE_MODELS = [
+  process.env.GOOGLE_GEMINI_MODEL,
+  'gemini-3.5-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-flash-lite-latest',
+  'gemini-3-flash-preview',
+].filter(Boolean);
 
 // Assemble the retrieved user context into a compact, model-friendly block.
 function buildSystemPrompt(user, ctx = {}) {
@@ -90,8 +97,6 @@ router.post('/coach/chat', verifyToken, async (req, res) => {
     generationConfig: { temperature: 0.7, maxOutputTokens: 900, topP: 0.95 },
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?alt=sse&key=${key}`;
-
   // Open the SSE channel to the browser.
   res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -100,15 +105,31 @@ router.post('/coach/chat', verifyToken, async (req, res) => {
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
   try {
-    const upstream = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    let upstream = null;
+    let lastStatus = 500;
+    let lastDetail = '';
+    const modelsToTry = Array.from(new Set(CANDIDATE_MODELS));
 
-    if (!upstream.ok || !upstream.body) {
-      const detail = await upstream.text().catch(() => '');
-      res.write(`event: error\ndata: ${JSON.stringify({ error: `Gemini HTTP ${upstream.status}`, detail: detail.slice(0, 300) })}\n\n`);
+    for (const m of modelsToTry) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:streamGenerateContent?alt=sse&key=${key}`;
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (r.ok && r.body) {
+        upstream = r;
+        break;
+      }
+      lastStatus = r.status;
+      lastDetail = await r.text().catch(() => '');
+      if (![404, 429, 503].includes(r.status)) {
+        break;
+      }
+    }
+
+    if (!upstream || !upstream.body) {
+      res.write(`event: error\ndata: ${JSON.stringify({ error: `Gemini HTTP ${lastStatus}`, detail: lastDetail.slice(0, 300) })}\n\n`);
       return res.end();
     }
 

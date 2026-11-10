@@ -123,10 +123,10 @@ async function analyzeWithGemini(input) {
     throw new Error('Gemini API key is not configured. Set GOOGLE_API_KEY (or GEMINI_API_KEY) in backend environment.');
   }
   const envModel = (process.env.GOOGLE_GEMINI_MODEL || '').trim();
-  // Use stable multimodal model by default; allow env override.
-  let modelName = envModel || 'gemini-2.5-flash';
-  if (/^gemini-?pro$/i.test(modelName)) modelName = 'gemini-2.5-pro';
-  if (/^gemini-?pro-?vision$/i.test(modelName)) modelName = 'gemini-2.5-flash';
+  // Use modern multimodal model by default; allow env override.
+  let modelName = envModel || 'gemini-3.5-flash';
+  if (/^gemini-?pro$/i.test(modelName)) modelName = 'gemini-3.5-flash';
+  if (/^gemini-?pro-?vision$/i.test(modelName)) modelName = 'gemini-3.5-flash';
 
   const source = typeof input === 'string' ? { pathOrUrl: input } : (input || {});
 
@@ -151,15 +151,12 @@ async function analyzeWithGemini(input) {
 
   const staticCandidates = [
     modelName,
-    'gemini-2.5-flash',
-    'gemini-2.0-flash-exp',
-    'gemini-2.0-flash-lite',
-    'gemini-2.0-flash',
-    'gemini-1.5-flash-8b',
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
-    'gemini-1.5-pro-latest'
+    'gemini-3.5-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-flash-lite-latest',
+    'gemini-3-flash-preview',
+    'gemini-3.8-flash',
   ].filter(Boolean);
   const apiVersions = ['v1beta', 'v1'];
 
@@ -179,14 +176,9 @@ async function analyzeWithGemini(input) {
           const details = String(e?.details || '').toLowerCase();
           const isModelNotFound = status === 404 || (status === 400 && /not found|unsupported model|is not found/.test(details));
           const isRateLimited = status === 429;
+          const isUnavailable = status === 503 || status === 500;
           const isImageProcessError = status === 400 && /unable to process input image|invalid_argument/.test(details);
-          if (isModelNotFound) continue;
-          if (isRateLimited) {
-            // Try next model/version/key before failing.
-            continue;
-          }
-          if (isImageProcessError) {
-            // Some models reject certain image encodings/sizes; try alternatives.
+          if (isModelNotFound || isRateLimited || isUnavailable || isImageProcessError) {
             continue;
           }
           throw e;

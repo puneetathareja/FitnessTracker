@@ -15,28 +15,57 @@ function key() {
   ).trim();
 }
 function model() {
-  return (process.env.GOOGLE_GEMINI_MODEL || 'gemini-2.5-flash').trim();
+  return (process.env.GOOGLE_GEMINI_MODEL || 'gemini-3.5-flash').trim();
 }
 function hasKey() {
   return !!key();
 }
 
+const FALLBACK_MODELS = [
+  'gemini-3.5-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-flash-lite-latest',
+  'gemini-3-flash-preview',
+];
+
 async function callGenerate(body) {
   const k = key();
   if (!k) { const e = new Error('AI is not configured (missing Gemini API key).'); e.code = 'NO_KEY'; throw e; }
-  const r = await fetch(`${BASE}/models/${model()}:generateContent?key=${k}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!r.ok) {
-    const detail = await r.text().catch(() => '');
-    const e = new Error(`Gemini HTTP ${r.status}`);
-    e.detail = detail.slice(0, 300);
-    throw e;
+  
+  const configured = model();
+  const models = Array.from(new Set([configured, ...FALLBACK_MODELS]));
+  let lastErr = null;
+
+  for (const m of models) {
+    try {
+      const r = await fetch(`${BASE}/models/${m}:generateContent?key=${k}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (r.ok) {
+        const j = await r.json();
+        return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+      }
+      const detail = await r.text().catch(() => '');
+      const err = new Error(`Gemini HTTP ${r.status}`);
+      err.detail = detail.slice(0, 300);
+      err.status = r.status;
+      lastErr = err;
+      if ([404, 429, 503].includes(r.status)) {
+        continue;
+      }
+      throw err;
+    } catch (err) {
+      lastErr = err;
+      if (err.status && [404, 429, 503].includes(err.status)) {
+        continue;
+      }
+      throw err;
+    }
   }
-  const j = await r.json();
-  return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+  throw lastErr;
 }
 
 // Free-form text generation.
