@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: fitness-buddy-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: HOST
+        value: 0.0.0.0
+      - key: DB_FILE
+        value: /tmp/db.sqlite
+      - key: UPLOADS_DIR
+        value: /tmp/uploads
+      - key: MONGODB_URI
+        value: to-set-in-dashboard
+      - key: JWT_SECRET
+        value: to-set-in-dashboard
+      - key: GOOGLE_API_KEY
+        value: to-set-in-dashboard
+      - key: GOOGLE_GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: CLOUDINARY_URL
+        value: optional-set-in-dashboard

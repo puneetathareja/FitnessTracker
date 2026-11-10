@@ -1,0 +1,229 @@
+/* Fitness Buddy — SaaS UI (from the Claude Design "Fitness Buddy" mockup, matched exactly) */
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Instrument+Sans:wght@400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Claude dark — warm charcoal stage, coral accent, warm ivory ink */
+  --bg-primary: #1F1E1D;        /* warm near-black */
+  --bg-secondary: #262624;      /* panel */
+  --bg-card: #3A3937;           /* raised card / borders */
+  --accent-lime: #D97757;       /* Claude coral (legacy var name, kept for compat) */
+  --accent: #D97757;
+  --text-primary: #F5F4EE;      /* warm ivory */
+  --text-secondary: #A6A29A;    /* warm stone */
+  --border-color: #4C4A46;
+  --border-light: #3A3937;
+
+  /* System tokens — matched to the design export */
+  --font-display: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Instrument Sans', system-ui, sans-serif;
+  --panel: #262624;             /* opaque card surface */
+  --tile: #30302E;              /* nested tile / icon well */
+  --tile-dim: #2B2B29;          /* completed / muted tile */
+  --hairline: rgba(255, 255, 255, 0.08);
+  --text-tertiary: #7C7972;
+  --text-body: #CFCCC4;
+  --coral-tint-text: #F0B79C;   /* text inside coral-tinted chips */
+  --accent-hover: #C96846;
+  /* Card = border + inset top highlight + deep soft shadow (no blur/glass) */
+  --card-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 16px 34px -22px rgba(0,0,0,0.75);
+  --card-shadow-lg: 0 1px 0 rgba(255,255,255,0.06) inset, 0 22px 44px -28px rgba(0,0,0,0.9);
+  --coral-btn-shadow: 0 1px 0 rgba(255,255,255,0.24) inset, 0 10px 24px -14px rgba(217,119,87,0.9);
+  --accent-glow: 0 0 0 1px rgba(217, 119, 87, 0.28), 0 10px 40px rgba(217, 119, 87, 0.12);
+
+  /* Legacy aliases (glass/neu classes now resolve to the flat mock surfaces) */
+  --glass-bg: #262624;
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-contact: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-ambient: 0 16px 34px -22px rgba(0, 0, 0, 0.75);
+  --neu-base: #30302E;
+  --neu-raised: 0 1px 0 rgba(255,255,255,0.05) inset, 0 10px 24px -18px rgba(0,0,0,0.7);
+  --neu-raised-sm: 0 1px 0 rgba(255,255,255,0.05) inset;
+  --neu-pressed: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  background-color: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+/* Panel surface (mock: opaque #262624, hairline border, inset highlight, deep shadow) */
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--card-shadow);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  font-weight: 400; /* the mock's serif headings sit at 400 */
+}
+
+/* Typography — headings render in the Newsreader serif (mock system) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
+
+p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Button Base Styles */
+button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Primary Button (Coral Accent) */
+button.btn-primary {
+  background-color: var(--accent);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+button.btn-primary:hover {
+  background-color: #C4664A;
+}
+
+/* Secondary Button (Dark) */
+button.btn-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+button.btn-secondary:hover {
+  background-color: var(--bg-card);
+}
+
+/* Input Styles */
+input, textarea, select {
+  font-family: var(--font-body);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-lime);
+  box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.1);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Card — the mock's panel: opaque, 18px radius, hairline + inset highlight + soft depth */
+.card {
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 24px;
+  border: 1px solid var(--hairline);
+  box-shadow: var(--card-shadow);
+  transition: border-color .2s ease;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Nested tile — mock's #30302E wells (icon tiles, list items inside cards) */
+.neu-tile {
+  background: var(--tile);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+  border-radius: 12px;
+}
+.neu-badge {
+  background: var(--tile);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Scrollbar (mock spec) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  border: 3px solid #1F1E1D;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); }
+
+/* Toast entrance (used by <Toaster/>) */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Link Styles */
+a {
+  color: var(--accent-lime);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #E8A288;
+}
+
+/* Utility Classes */
+.text-lime { color: var(--accent); } /* legacy class name; renders coral */
+.text-accent { color: var(--accent); }
+.text-secondary { color: var(--text-secondary); }
+.bg-dark { background-color: var(--bg-primary); }
+.bg-card { background-color: var(--bg-secondary); }
+.rounded-xl { border-radius: 20px; }
+.rounded-full { border-radius: 9999px; }
