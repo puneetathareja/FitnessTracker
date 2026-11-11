@@ -5,3 +5,4 @@ db.sqlite
 uploads/
 .env
 .env.*
+!.env.example
